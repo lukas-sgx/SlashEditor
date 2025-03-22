@@ -8,13 +8,13 @@
 
 ### 1️⃣ Cloner le dépôt  
 ```bash
-git clone https://github.com/ton-repo/SlashEditor.git
+git clone https://github.com/lukas-sgx/SlashEditor.git
 cd SlashEditor
 ```
 
 ### 2️⃣ Compiler et exécuter  
 ```bash
-make
+gcc -o SlashEditor main.c -lSDL2 -lSDL2_ttf
 ./SlashEditor
 ```
 

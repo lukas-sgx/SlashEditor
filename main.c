@@ -1,15 +1,19 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <SDL2/SDL.h>
+#include <SDL2/SDL_ttf.h>
+#include <string.h>
 #include "view.h"
 
 void initWindow(SDL_Window **window, SDL_Renderer **renderer);
 void closeWindow(SDL_Window *window, SDL_Renderer *renderer);
+void keyboard(SDL_KeyboardEvent *key);
 
 int main(int argc, char const *argv[]){
     
     SDL_Window *window = NULL;
     SDL_Renderer *renderer = NULL;
+    TTF_Font *font = NULL;
 
     initWindow(&window, &renderer);
 
@@ -18,7 +22,17 @@ int main(int argc, char const *argv[]){
 
     while (running) {
         while (SDL_PollEvent(&event)) {
-            if (event.type == SDL_QUIT) running = 0;
+            switch (event.type)
+            {
+            case SDL_QUIT:
+                running = 0;
+                break;
+            case SDL_KEYDOWN:
+                keyboard(event.key.keysym.sym);
+            
+            default:
+                break;
+            } 
         }
 
         SDL_SetRenderDrawColor(renderer, 40, 40, 40, 255);
@@ -35,6 +49,12 @@ int main(int argc, char const *argv[]){
 void initWindow(SDL_Window **window, SDL_Renderer **renderer){
     if(SDL_Init(SDL_INIT_VIDEO) != 0){
         fprintf(stderr, "Erreur SDL_Init : %s\n", SDL_GetError());
+        exit(EXIT_FAILURE);
+    }
+
+    if (TTF_Init() == -1){
+        fprintf(stderr, "Erreur TTF_Init: %s\n", TTF_GetError());
+        SDL_Quit();
         exit(EXIT_FAILURE);
     }
 
@@ -58,4 +78,8 @@ void closeWindow(SDL_Window *window, SDL_Renderer *renderer){
     SDL_DestroyRenderer(renderer);
     SDL_DestroyWindow(window);
     SDL_Quit();
+}
+
+void keyboard(SDL_KeyboardEvent *key){
+
 }
