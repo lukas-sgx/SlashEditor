@@ -5,22 +5,35 @@
 #include <string.h>
 #include "view.h"
 
-void initWindow(SDL_Window **window, SDL_Renderer **renderer);
+#define FPS 30
+
+void initWindow(SDL_Window **window, SDL_Renderer **renderer, TTF_Font **font);
 void closeWindow(SDL_Window *window, SDL_Renderer *renderer);
-void keyboard(SDL_KeyboardEvent *key);
+void initCodeText(SDL_Renderer *renderer, TTF_Font *font, SDL_Texture **textTexture, SDL_Rect *textRect, SDL_Color textColor);
+void frameDelay(int fps, Uint32 frameStart);
+void keyboard(SDL_Event *event);
 
 int main(int argc, char const *argv[]){
     
     SDL_Window *window = NULL;
     SDL_Renderer *renderer = NULL;
-    TTF_Font *font = NULL;
 
-    initWindow(&window, &renderer);
+    TTF_Font *font = NULL;
+    SDL_Texture *textTexture = NULL;
+    SDL_Rect textRect;
+    SDL_Color textColor = {255,255,255,255};
+
+    Uint32 frameStart;
+
+    initWindow(&window, &renderer, &font);
+    initCodeText(renderer, font, &textTexture, &textRect, textColor);
 
     int running = 1;
     SDL_Event event;
 
     while (running) {
+        frameStart = SDL_GetTicks();
+
         while (SDL_PollEvent(&event)) {
             switch (event.type)
             {
@@ -28,8 +41,8 @@ int main(int argc, char const *argv[]){
                 running = 0;
                 break;
             case SDL_KEYDOWN:
-                keyboard(event.key.keysym.sym);
-            
+                keyboard(&event);
+                break;
             default:
                 break;
             } 
@@ -37,7 +50,10 @@ int main(int argc, char const *argv[]){
 
         SDL_SetRenderDrawColor(renderer, 40, 40, 40, 255);
         SDL_RenderClear(renderer); 
+        SDL_RenderCopy(renderer, textTexture, NULL, &textRect);
         SDL_RenderPresent(renderer);
+
+        frameDelay(FPS, frameStart);
     }
 
     closeWindow(window, renderer);
@@ -46,7 +62,7 @@ int main(int argc, char const *argv[]){
 }
 
 
-void initWindow(SDL_Window **window, SDL_Renderer **renderer){
+void initWindow(SDL_Window **window, SDL_Renderer **renderer, TTF_Font **font){
     if(SDL_Init(SDL_INIT_VIDEO) != 0){
         fprintf(stderr, "Erreur SDL_Init : %s\n", SDL_GetError());
         exit(EXIT_FAILURE);
@@ -58,7 +74,7 @@ void initWindow(SDL_Window **window, SDL_Renderer **renderer){
         exit(EXIT_FAILURE);
     }
 
-    *window = SDL_CreateWindow("Slash Editor V1.0.0", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 680, 480, 0);
+    *window = SDL_CreateWindow("Slash Editor", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 680, 480, 0);
     if (!*window) {
         fprintf(stderr, "Erreur SDL_CreateWindow : %s\n", SDL_GetError());
         SDL_Quit();
@@ -72,14 +88,46 @@ void initWindow(SDL_Window **window, SDL_Renderer **renderer){
         SDL_Quit();
         exit(EXIT_FAILURE);
     }
+
+    *font = TTF_OpenFont("assets/CascadiaCode.ttf", 15);
+    if (!*font) {
+        printf("Erreur chargement police: %s\n", TTF_GetError());
+        exit(EXIT_FAILURE);
+    }
+
 }
 
 void closeWindow(SDL_Window *window, SDL_Renderer *renderer){
     SDL_DestroyRenderer(renderer);
     SDL_DestroyWindow(window);
+    TTF_Quit();
     SDL_Quit();
 }
 
-void keyboard(SDL_KeyboardEvent *key){
+void frameDelay(int fps, Uint32 frameStart){
+    int frameTime;
+    int frameDelay = 1000 / fps;
 
+    frameTime = SDL_GetTicks() - frameStart;
+    if (frameDelay > frameTime) {
+        SDL_Delay(frameDelay - frameTime); 
+    }
+}
+
+void initCodeText(SDL_Renderer *renderer, TTF_Font *font, SDL_Texture **textTexture, SDL_Rect *textRect, SDL_Color textColor){
+    SDL_Surface *textSurface = TTF_RenderText_Blended(font, "Hello c'est lukas", textColor);
+    *textTexture = SDL_CreateTextureFromSurface(renderer, textSurface);
+    SDL_FreeSurface(textSurface);
+
+    
+    textRect->x = 10;
+    textRect->y = 10;
+    textRect->w = textSurface->w;
+    textRect->h = textSurface->h;
+
+    // SDL_DestroyTexture(*textTexture);
+}
+
+void keyboard(SDL_Event *event){
+    printf("%s\n", SDL_GetKeyName(event->key.keysym.sym));
 }
