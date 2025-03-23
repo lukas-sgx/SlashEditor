@@ -6,12 +6,13 @@
 #include "view.h"
 
 #define FPS 30
+#define MAX_LENGTH 256
 
 void initWindow(SDL_Window **window, SDL_Renderer **renderer, TTF_Font **font);
 void closeWindow(SDL_Window *window, SDL_Renderer *renderer);
 void initCodeText(SDL_Renderer *renderer, TTF_Font *font, SDL_Texture **textTexture, SDL_Rect *textRect, SDL_Color textColor);
 void frameDelay(int fps, Uint32 frameStart);
-void keyboard(SDL_Event *event);
+void handle(SDL_Event *event);
 
 int main(int argc, char const *argv[]){
     
@@ -21,7 +22,7 @@ int main(int argc, char const *argv[]){
     TTF_Font *font = NULL;
     SDL_Texture *textTexture = NULL;
     SDL_Rect textRect;
-    SDL_Color textColor = {255,255,255,255};
+    SDL_Color textColor = {112,112,112,255};
 
     Uint32 frameStart;
 
@@ -41,14 +42,14 @@ int main(int argc, char const *argv[]){
                 running = 0;
                 break;
             case SDL_KEYDOWN:
-                keyboard(&event);
+                handle(&event);
                 break;
             default:
                 break;
             } 
         }
 
-        SDL_SetRenderDrawColor(renderer, 40, 40, 40, 255);
+        SDL_SetRenderDrawColor(renderer, 25, 25, 25, 255);
         SDL_RenderClear(renderer); 
         SDL_RenderCopy(renderer, textTexture, NULL, &textRect);
         SDL_RenderPresent(renderer);
@@ -115,7 +116,7 @@ void frameDelay(int fps, Uint32 frameStart){
 }
 
 void initCodeText(SDL_Renderer *renderer, TTF_Font *font, SDL_Texture **textTexture, SDL_Rect *textRect, SDL_Color textColor){
-    SDL_Surface *textSurface = TTF_RenderText_Blended(font, "Hello c'est lukas", textColor);
+    SDL_Surface *textSurface = TTF_RenderText_Blended(font, "Start Typing...", textColor);
     *textTexture = SDL_CreateTextureFromSurface(renderer, textSurface);
     SDL_FreeSurface(textSurface);
 
@@ -128,6 +129,8 @@ void initCodeText(SDL_Renderer *renderer, TTF_Font *font, SDL_Texture **textText
     // SDL_DestroyTexture(*textTexture);
 }
 
-void keyboard(SDL_Event *event){
+void handle(SDL_Event *event){
+    // if(event->key.)
+    
     printf("%s\n", SDL_GetKeyName(event->key.keysym.sym));
 }
