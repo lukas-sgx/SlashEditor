@@ -1,6 +1,5 @@
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_ttf.h>
-#include <string.h>
 
 void initWindow(SDL_Window **window, SDL_Renderer **renderer, TTF_Font **font){
     if(SDL_Init(SDL_INIT_VIDEO) != 0){

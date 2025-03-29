@@ -7,7 +7,7 @@
 #include "handle.h"
 
 #define FPS 30
-#define INIT_SIZE 10
+#define INIT_SIZE 16
 
 int main(int argc, char const *argv[]){
     
@@ -17,20 +17,20 @@ int main(int argc, char const *argv[]){
     TTF_Font *font = NULL;
     SDL_Texture *textTexture = NULL;
     SDL_Rect textRect;
-    SDL_Color textColor = {112,112,112,255};
+    SDL_Color GrayColor = {112,112,112,230};
+    SDL_Color WhiteColor = {255,255,255,230}; 
 
     Uint32 frameStart;
 
     int size = INIT_SIZE;
     int length = 0;
     char *buffer = malloc(size * sizeof(char));
+    strcpy(buffer, "Start Typing...");
 
-    buffer[0] = '\0';
-
-    printf("%s", buffer);
 
     initWindow(&window, &renderer, &font);
-    initCodeText(renderer, font, &textTexture, &textRect, textColor);
+    codeText(renderer, font, &textTexture, &textRect, GrayColor, buffer);
+
 
     int running = 1;
     SDL_Event event;
@@ -45,7 +45,7 @@ int main(int argc, char const *argv[]){
                 running = 0;
                 break;
             case SDL_KEYDOWN:
-                handle(&event);
+                codeText(renderer, font, &textTexture, &textRect, WhiteColor, SDL_GetKeyName(event.key.keysym.sym));
                 break;
             default:
                 break;

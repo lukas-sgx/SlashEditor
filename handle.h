@@ -1,2 +1,2 @@
-void initCodeText(SDL_Renderer *renderer, TTF_Font *font, SDL_Texture **textTexture, SDL_Rect *textRect, SDL_Color textColor);
-void handle(SDL_Event *event);
+void codeText(SDL_Renderer *renderer, TTF_Font *font, SDL_Texture **textTexture, SDL_Rect *textRect, SDL_Color textColor, char const *text);
+void handle(SDL_Event *event, SDL_Renderer *renderer, TTF_Font *font, SDL_Texture *textTexture, SDL_Rect *textRect, SDL_Color textColor);
