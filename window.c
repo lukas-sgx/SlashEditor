@@ -13,7 +13,7 @@ void initWindow(SDL_Window **window, SDL_Renderer **renderer, TTF_Font **font){
         exit(EXIT_FAILURE);
     }
 
-    *window = SDL_CreateWindow("Slash Editor", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 680, 480, 0);
+    *window = SDL_CreateWindow("Slash Editor", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 680, 480, SDL_WINDOW_SHOWN);
     if (!*window) {
         fprintf(stderr, "Erreur SDL_CreateWindow : %s\n", SDL_GetError());
         SDL_Quit();
