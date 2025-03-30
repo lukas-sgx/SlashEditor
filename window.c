@@ -36,8 +36,7 @@ void initWindow(SDL_Window **window, SDL_Renderer **renderer, TTF_Font **font){
 
 }
 
-void closeWindow(SDL_Window *window, SDL_Renderer *renderer, char *buffer, TTF_Font *font){
-    free(buffer);
+void closeWindow(SDL_Window *window, SDL_Renderer *renderer, TTF_Font *font){
     TTF_CloseFont(font);
     SDL_DestroyRenderer(renderer);
     SDL_DestroyWindow(window);

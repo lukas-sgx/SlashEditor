@@ -1,22 +1,131 @@
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_ttf.h>
+#include "window.h"
 
-void codeText(SDL_Renderer *renderer, TTF_Font *font, SDL_Texture **textTexture, SDL_Rect *textRect, SDL_Color textColor, char const *text){
-    SDL_Surface *textSurface = TTF_RenderText_Blended(font, text, textColor);
-    if (!textSurface) {
-        return;
+#define FPS 30
+
+void codeText(SDL_Renderer *renderer, TTF_Font *font, SDL_Color textColor, const char *text) {
+    char buffer[strlen(text) + 1];
+    strcpy(buffer, text);
+
+    char *line = strtok(buffer, "\n");
+    int line_y = 10;
+
+    while (line) {
+        SDL_Texture *textTexture = NULL;
+        SDL_Rect textRect;
+        SDL_Surface *textSurface = TTF_RenderText_Blended(font, line, textColor);
+
+        if (!textSurface) return;
+
+        textTexture = SDL_CreateTextureFromSurface(renderer, textSurface);
+        textRect.x = 10;
+        textRect.y = line_y;
+        textRect.w = textSurface->w;
+        textRect.h = textSurface->h;
+
+        SDL_RenderCopy(renderer, textTexture, NULL, &textRect);
+        SDL_DestroyTexture(textTexture);
+
+        line_y += textSurface->h;
+        SDL_FreeSurface(textSurface);
+        line = strtok(NULL, "\n");
     }
-
-    *textTexture = SDL_CreateTextureFromSurface(renderer, textSurface);
-    textRect->x = 10;
-    textRect->y = 10;
-    textRect->w = textSurface->w;
-    textRect->h = textSurface->h;
-
-    SDL_FreeSurface(textSurface);
 }
 
+void handle(SDL_Window *window, SDL_Renderer *renderer, TTF_Font *font, char *buffer, const char *start) {
+    SDL_Color GrayColor = {112, 112, 112, 230};
+    SDL_Color WhiteColor = {255, 255, 255, 230};
 
-void handle(){
+    Uint32 frameStart;
+    int running = 1;
+    int ctrl_pressed = 0;
+    SDL_Event event;
 
+    while (running) {
+        frameStart = SDL_GetTicks();
+
+        while (SDL_PollEvent(&event)) {
+            switch (event.type) {
+                case SDL_QUIT:
+                    running = 0;
+                    break;
+
+                case SDL_KEYDOWN:
+                    if ((event.key.keysym.sym == SDLK_LCTRL || event.key.keysym.sym == SDLK_RCTRL)) {
+                        ctrl_pressed = 1;
+                    } else {
+                        int len = strlen(buffer);
+                        const char *key = NULL;
+                        int lenKey = 0;
+                        char *newBuffer = NULL;
+
+                        switch (event.key.keysym.sym) {
+                            case SDLK_SPACE:
+                                key = " ";
+                                lenKey = 1;
+                                break;
+
+                            case SDLK_BACKSPACE:
+                                if (len > 0) {
+                                    len--;
+                                    buffer[len] = '\0'; 
+                                    newBuffer = realloc(buffer, len + 1);
+                                    if (newBuffer) {
+                                        buffer = newBuffer;
+                                    }
+                                }
+                                break;
+
+                            case SDLK_RETURN:
+                                key = "\n";
+                                lenKey = 1;
+                                break;
+
+                            default:
+                                if (ctrl_pressed != 1 && event.key.keysym.sym < 128) {
+                                    key = SDL_GetKeyName(event.key.keysym.sym);
+                                    lenKey = strlen(key);
+                                }
+                                break;
+                        }
+
+                        if (key) {
+                            newBuffer = realloc(buffer, len + lenKey + 1);
+                            if (newBuffer) {
+                                buffer = newBuffer;
+                                memcpy(&buffer[len], key, lenKey);
+                                buffer[len + lenKey] = '\0';
+                            }
+                        }
+                    }
+
+                    if (ctrl_pressed && event.key.keysym.sym == SDLK_q) {
+                        running = 0;
+                    }
+                    break;
+
+                case SDL_KEYUP:
+                    if ((event.key.keysym.sym == SDLK_LCTRL || event.key.keysym.sym == SDLK_RCTRL)) {
+                        ctrl_pressed = 0;
+                    }
+                    break;
+
+                default:
+                    break;
+            }
+        }
+
+        SDL_SetRenderDrawColor(renderer, 25, 25, 25, 255); 
+        SDL_RenderClear(renderer);
+
+        if (buffer[0] != '\0') {
+            codeText(renderer, font, WhiteColor, buffer);
+        } else {
+            codeText(renderer, font, GrayColor, start);
+        }
+
+        SDL_RenderPresent(renderer);
+        frameDelay(FPS, frameStart);
+    }
 }
