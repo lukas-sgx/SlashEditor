@@ -24,13 +24,10 @@ int main(int argc, char const *argv[]){
 
     int size = INIT_SIZE;
     char *buffer = malloc(size * sizeof(char));
-    strcpy(buffer, "Start Typing...");
-
+    buffer[0] = '\0';
 
     initWindow(&window, &renderer, &font);
     codeText(renderer, font, &textTexture, &textRect, GrayColor, buffer);
-
-    buffer[0] = '\0';
 
     int running = 1;
     SDL_Event event;
@@ -39,56 +36,72 @@ int main(int argc, char const *argv[]){
         frameStart = SDL_GetTicks();
 
         while (SDL_PollEvent(&event)) {
-            switch (event.type)
-            {
-            case SDL_QUIT:
-                running = 0;
-                break;
-            case SDL_KEYDOWN:
-                char const *key;
-                int lenKey;
-                int len = strlen(buffer);
+            switch (event.type) {
+                case SDL_QUIT:
+                    running = 0;
+                    break;
 
-                switch (event.key.keysym.sym){
-                    case SDLK_SPACE:
-                        key = " ";
-                        lenKey = 1;
+                case SDL_KEYDOWN:
+                    int len = strlen(buffer);
+                    char const *key;
+                    int lenKey;
 
-                        buffer = realloc(buffer, len+lenKey+1);
-                        buffer[len] = key[0];
-                        buffer[len+1] = '\0';
-                        break;
-                    case SDLK_BACKSPACE:
-                        if (len > 0){
-                            len--;
-                            if (len > 0){
-                                buffer[len] = '\0';
-                                buffer = realloc(buffer, len + 1);
-                            }else{
-                                buffer = realloc(buffer, 1);
-                                buffer[0] = '\0';
+                        char *newBuffer = NULL;
+
+                    switch (event.key.keysym.sym) {
+                        case SDLK_SPACE:
+                            key = " ";
+                            lenKey = 1;
+
+                            newBuffer = realloc(buffer, len + lenKey + 1);
+                            buffer = newBuffer;
+
+                            buffer[len] = key[0];
+                            buffer[len + 1] = '\0';
+                            break;
+
+                        case SDLK_BACKSPACE:
+                            if (len > 0) {
+                                len--;
+                                buffer[len] = '\0';  
+                                    
+                                newBuffer = realloc(buffer, len + 1);
+                                if (newBuffer) {
+                                    buffer = newBuffer;
+                                }
                             }
+
+                            break;
+
+                        default:
+                            key = SDL_GetKeyName(event.key.keysym.sym);
+                            lenKey = strlen(key);
+
+                            newBuffer = realloc(buffer, len + lenKey + 1);
+                            buffer = newBuffer;
+
+                            buffer[len] = key[0];
+                            buffer[len + 1] = '\0';
+                            break;
+                        
+                    }
+
+                        if (textTexture) {
+                            SDL_DestroyTexture(textTexture);
                         }
-                        break;
-                    default:
-                        key = SDL_GetKeyName(event.key.keysym.sym);
-                        lenKey = strlen(SDL_GetKeyName(event.key.keysym.sym));
 
-                        buffer = realloc(buffer, len+lenKey+1);
-                        buffer[len] = key[0];
-                        buffer[len+1] = '\0';
-                        break;  
-                }                             
+                        codeText(renderer, font, &textTexture, &textRect, WhiteColor, buffer);
+                        
+                    break;
 
-                codeText(renderer, font, &textTexture, &textRect, WhiteColor, buffer);
-                break;
-            default:
-                break;
-            } 
+                default:
+                    break;
+            }
+        
         }
 
         SDL_SetRenderDrawColor(renderer, 25, 25, 25, 255);
-        SDL_RenderClear(renderer); 
+        SDL_RenderClear(renderer);
         SDL_RenderCopy(renderer, textTexture, NULL, &textRect);
         SDL_RenderPresent(renderer);
 
