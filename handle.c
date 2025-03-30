@@ -15,8 +15,6 @@ void codeText(SDL_Renderer *renderer, TTF_Font *font, SDL_Texture **textTexture,
     // SDL_DestroyTexture(*textTexture);
 }
 
-void handle(SDL_Event *event, SDL_Renderer *renderer, TTF_Font *font, SDL_Texture **textTexture, SDL_Rect *textRect, SDL_Color textColor){
-    codeText(renderer, font, textTexture, textRect, textColor, SDL_GetKeyName(event->key.keysym.sym));
-    
-    printf("%s\n", SDL_GetKeyName(event->key.keysym.sym));
+void handle(){
+
 }

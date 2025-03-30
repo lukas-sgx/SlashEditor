@@ -23,7 +23,6 @@ int main(int argc, char const *argv[]){
     Uint32 frameStart;
 
     int size = INIT_SIZE;
-    int length = 0;
     char *buffer = malloc(size * sizeof(char));
     strcpy(buffer, "Start Typing...");
 
@@ -31,6 +30,7 @@ int main(int argc, char const *argv[]){
     initWindow(&window, &renderer, &font);
     codeText(renderer, font, &textTexture, &textRect, GrayColor, buffer);
 
+    buffer[0] = '\0';
 
     int running = 1;
     SDL_Event event;
@@ -45,7 +45,42 @@ int main(int argc, char const *argv[]){
                 running = 0;
                 break;
             case SDL_KEYDOWN:
-                codeText(renderer, font, &textTexture, &textRect, WhiteColor, SDL_GetKeyName(event.key.keysym.sym));
+                char const *key;
+                int lenKey;
+                int len = strlen(buffer);
+
+                switch (event.key.keysym.sym){
+                    case SDLK_SPACE:
+                        key = " ";
+                        lenKey = 1;
+
+                        buffer = realloc(buffer, len+lenKey+1);
+                        buffer[len] = key[0];
+                        buffer[len+1] = '\0';
+                        break;
+                    case SDLK_BACKSPACE:
+                        if (len > 0){
+                            len--;
+                            if (len > 0){
+                                buffer[len] = '\0';
+                                buffer = realloc(buffer, len + 1);
+                            }else{
+                                buffer = realloc(buffer, 1);
+                                buffer[0] = '\0';
+                            }
+                        }
+                        break;
+                    default:
+                        key = SDL_GetKeyName(event.key.keysym.sym);
+                        lenKey = strlen(SDL_GetKeyName(event.key.keysym.sym));
+
+                        buffer = realloc(buffer, len+lenKey+1);
+                        buffer[len] = key[0];
+                        buffer[len+1] = '\0';
+                        break;  
+                }                             
+
+                codeText(renderer, font, &textTexture, &textRect, WhiteColor, buffer);
                 break;
             default:
                 break;
