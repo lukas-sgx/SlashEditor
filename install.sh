@@ -28,15 +28,18 @@ mkdir -p assets
 
 # Téléchargement et installation de la police Cascadia Code
 echo "🔠 Installation de la police Cascadia Code..."
-FONT_URL="https://github.com/microsoft/cascadia-code/releases/latest/download/CascadiaCode-ttf.zip"
+FONT_URL="https://github.com/microsoft/cascadia-code/releases/download/v2407.24/CascadiaCode-2407.24.zip"
 wget -O assets/CascadiaCode.zip "$FONT_URL"
 unzip -o assets/CascadiaCode.zip -d assets/
 mv assets/ttf/CascadiaCode.ttf assets/CascadiaCode.ttf
 rm -rf assets/CascadiaCode.zip assets/ttf
+rm -rf assets/otf
+rm -rf assets/woff2
+
 
 # Compilation du projet
 echo "⚙️ Compilation du projet..."
-gcc -o slash_editor main.c -lSDL2 -lSDL2_ttf
+gcc -o SlashEditor main.c handle.c window.c -lSDL2 -lSDL2_ttf
 
 echo "✅ Installation terminée ! Lancez le programme avec :"
-echo "   ./slash_editor"
+echo "   ./SlashEditor"

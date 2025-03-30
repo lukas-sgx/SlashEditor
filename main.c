@@ -1,4 +1,3 @@
-#include <stdlib.h>
 #include <stdio.h>
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_ttf.h>
@@ -23,11 +22,16 @@ int main(int argc, char const *argv[]){
     Uint32 frameStart;
 
     int size = INIT_SIZE;
+    char *start = malloc(size * sizeof(char));
     char *buffer = malloc(size * sizeof(char));
+
+    strcpy(start, "Start Typing...");
     buffer[0] = '\0';
 
     initWindow(&window, &renderer, &font);
-    codeText(renderer, font, &textTexture, &textRect, GrayColor, buffer);
+    codeText(renderer, font, &textTexture, &textRect, GrayColor, start);
+
+    // free(start);
 
     int running = 1;
     SDL_Event event;
@@ -45,8 +49,7 @@ int main(int argc, char const *argv[]){
                     int len = strlen(buffer);
                     char const *key;
                     int lenKey;
-
-                        char *newBuffer = NULL;
+                    char *newBuffer = NULL;
 
                     switch (event.key.keysym.sym) {
                         case SDLK_SPACE:
@@ -90,8 +93,12 @@ int main(int argc, char const *argv[]){
                             SDL_DestroyTexture(textTexture);
                         }
 
-                        codeText(renderer, font, &textTexture, &textRect, WhiteColor, buffer);
-                        
+                        if(buffer[0] != '\0'){
+                            codeText(renderer, font, &textTexture, &textRect, WhiteColor, buffer);
+                        }else{
+                            codeText(renderer, font, &textTexture, &textRect, GrayColor, start);
+                        }
+
                     break;
 
                 default:
@@ -108,6 +115,7 @@ int main(int argc, char const *argv[]){
         frameDelay(FPS, frameStart);
     }
 
+    free(start);
     closeWindow(window, renderer, buffer, font);
 
     return EXIT_SUCCESS;

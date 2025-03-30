@@ -14,7 +14,7 @@ cd SlashEditor
 
 ### 2️⃣ Compiler et exécuter  
 ```bash
-gcc -o SlashEditor main.c -lSDL2 -lSDL2_ttf
+gcc -o SlashEditor main.c handle.c window.c -lSDL2 -lSDL2_ttf
 ./SlashEditor
 ```
 
@@ -33,7 +33,7 @@ gcc -o SlashEditor main.c -lSDL2 -lSDL2_ttf
 ## 🛠️ Technologies utilisées  
 
 - ✅ **Langage** : C  
-- ✅ **Bibliothèques** : SDL2, SDL_ttf  
+- ✅ **Bibliothèques** : SDL2, SDL_ttf, stdio, string  
 
 
 
