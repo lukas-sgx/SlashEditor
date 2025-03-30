@@ -31,8 +31,6 @@ int main(int argc, char const *argv[]){
     initWindow(&window, &renderer, &font);
     codeText(renderer, font, &textTexture, &textRect, GrayColor, start);
 
-    // free(start);
-
     int running = 1;
     SDL_Event event;
 
