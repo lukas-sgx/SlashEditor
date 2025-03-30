@@ -70,9 +70,15 @@ void handle(SDL_Window *window, SDL_Renderer *renderer, TTF_Font *font, char *bu
                                 if (len > 0) {
                                     len--;
                                     buffer[len] = '\0'; 
-                                    newBuffer = realloc(buffer, len + 1);
-                                    if (newBuffer) {
-                                        buffer = newBuffer;
+                                    if (len == 0) {
+                                        free(buffer);
+                                        buffer = malloc(1 * sizeof(char));
+                                        buffer[0] = '\0';
+                                    } else {
+                                        newBuffer = realloc(buffer, len + 1);
+                                        if (newBuffer) {
+                                            buffer = newBuffer;
+                                        }
                                     }
                                 }
                                 break;

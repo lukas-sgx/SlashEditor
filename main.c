@@ -28,7 +28,9 @@ int main(int argc, char const *argv[]){
     handle(window, renderer, font, buffer, start);
 
     free(start);
-    free(buffer);
+    if(buffer){
+        free(buffer);
+    }
     closeWindow(window, renderer, font);
 
     return EXIT_SUCCESS;
