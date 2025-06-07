@@ -3,7 +3,7 @@
 #include "window.h"
 #include "tinyfiledialogs.h"
 
-#define FPS 30
+#define FPS 24
 
 void codeText(SDL_Renderer *renderer, TTF_Font *font, SDL_Color textColor, const char *text, int showCursor) {
     const char *lineStart = text;
