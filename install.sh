@@ -18,6 +18,9 @@ elif [[ "$(uname)" == "FreeBSD" ]]; then
 elif [[ "$OSTYPE" == "msys" || "$OSTYPE" == "cygwin" ]]; then
     echo "📦 Détection de Windows (MSYS2)..."
     pacman -S --noconfirm mingw-w64-x86_64-SDL2 mingw-w64-x86_64-SDL2_ttf wget unzip
+elif [[ -f /etc/arch-release ]]; then
+    echo "📦 Détection de Arch Linux..."
+    sudo pacman -Sy --noconfirm sdl2 sdl2_ttf wget unzip
 else
     echo "❌ OS non supporté. Installez SDL2 et SDL2_ttf manuellement."
     exit 1
