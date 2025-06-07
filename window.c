@@ -33,7 +33,9 @@ void initWindow(SDL_Window **window, SDL_Renderer **renderer, TTF_Font **font){
         printf("Erreur chargement police: %s\n", TTF_GetError());
         exit(EXIT_FAILURE);
     }
-
+    
+    SDL_Cursor *ibeamCursor = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_IBEAM);
+    SDL_SetCursor(ibeamCursor);
 }
 
 void closeWindow(SDL_Window *window, SDL_Renderer *renderer, TTF_Font *font){

@@ -63,7 +63,7 @@ void codeText(SDL_Renderer *renderer, TTF_Font *font, SDL_Color textColor, const
         SDL_Rect cursorRect = {
             10 + last_line_w,
             line_y,
-            2,
+            2.5,
             last_line_h
         };
         SDL_SetRenderDrawColor(renderer, 46, 149, 211, 255);
