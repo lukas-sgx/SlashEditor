@@ -137,6 +137,14 @@ void handle(SDL_Window *window, SDL_Renderer *renderer, TTF_Font *font, char *bu
                         if (path) {
                             FILE *file = fopen(path, "r");
                             if (file) {
+                                char title[256];
+                                const char *filename = strrchr(path, '/');
+                                if (filename)
+                                    filename++;
+                                else
+                                    filename = path;
+                                snprintf(title, sizeof(title), "Slash Editor - %s", filename);
+                                SDL_SetWindowTitle(window, title);
                                 char *line = NULL;
                                 line = malloc(1024 * sizeof(char));
                                 free(buffer);
