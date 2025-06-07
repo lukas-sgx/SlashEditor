@@ -23,7 +23,7 @@ int main(int argc, char const *argv[]){
     buffer[0] = '\0';
 
     initWindow(&window, &renderer, &font);
-    codeText(renderer, font, GrayColor, start);
+    codeText(renderer, font, GrayColor, start,0);
 
     handle(window, renderer, font, buffer, start);
 

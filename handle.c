@@ -5,46 +5,91 @@
 
 #define FPS 30
 
-void codeText(SDL_Renderer *renderer, TTF_Font *font, SDL_Color textColor, const char *text) {
-    char buffer[strlen(text) + 1];
-    strcpy(buffer, text);
+void codeText(SDL_Renderer *renderer, TTF_Font *font, SDL_Color textColor, const char *text, int showCursor) {
+    const char *lineStart = text;
+    const char *ptr = text;
 
-    char *line = strtok(buffer, "\n");
     int line_y = 10;
+    int last_line_w = 0;
+    int last_line_h = TTF_FontHeight(font);
 
-    while (line) {
-        SDL_Texture *textTexture = NULL;
-        SDL_Rect textRect;
+    while (*ptr) {
+        if (*ptr == '\n') {
+            int len = ptr - lineStart;
+            char *line = malloc(len + 1);
+            strncpy(line, lineStart, len);
+            line[len] = '\0';
+
+            SDL_Surface *textSurface = TTF_RenderText_Blended(font, line, textColor);
+            if (textSurface) {
+                SDL_Texture *textTexture = SDL_CreateTextureFromSurface(renderer, textSurface);
+                SDL_Rect textRect = {10, line_y, textSurface->w, textSurface->h};
+                SDL_RenderCopy(renderer, textTexture, NULL, &textRect);
+                SDL_DestroyTexture(textTexture);
+                last_line_w = 0;
+                last_line_h = textSurface->h;
+                SDL_FreeSurface(textSurface);
+            }
+
+            free(line);
+            line_y += last_line_h;
+            lineStart = ptr + 1;
+        }
+
+        ptr++;
+    }
+
+    if (lineStart <= ptr) {
+        int len = ptr - lineStart;
+        char *line = malloc(len + 1);
+        strncpy(line, lineStart, len);
+        line[len] = '\0';
+
         SDL_Surface *textSurface = TTF_RenderText_Blended(font, line, textColor);
+        if (textSurface) {
+            SDL_Texture *textTexture = SDL_CreateTextureFromSurface(renderer, textSurface);
+            SDL_Rect textRect = {10, line_y, textSurface->w, textSurface->h};
+            SDL_RenderCopy(renderer, textTexture, NULL, &textRect);
+            last_line_w = textSurface->w;
+            last_line_h = textSurface->h;
+            SDL_DestroyTexture(textTexture);
+            SDL_FreeSurface(textSurface);
+        }
 
-        if (!textSurface) return;
+        free(line);
+    }
 
-        textTexture = SDL_CreateTextureFromSurface(renderer, textSurface);
-        textRect.x = 10;
-        textRect.y = line_y;
-        textRect.w = textSurface->w;
-        textRect.h = textSurface->h;
-
-        SDL_RenderCopy(renderer, textTexture, NULL, &textRect);
-        SDL_DestroyTexture(textTexture);
-
-        line_y += textSurface->h;
-        SDL_FreeSurface(textSurface);
-        line = strtok(NULL, "\n");
+    if (showCursor) {
+        SDL_Rect cursorRect = {
+            10 + last_line_w,
+            line_y,
+            2,
+            last_line_h
+        };
+        SDL_SetRenderDrawColor(renderer, 46, 149, 211, 255);
+        SDL_RenderFillRect(renderer, &cursorRect);
     }
 }
 
 void handle(SDL_Window *window, SDL_Renderer *renderer, TTF_Font *font, char *buffer, const char *start) {
     SDL_Color GrayColor = {112, 112, 112, 230};
     SDL_Color WhiteColor = {255, 255, 255, 230};
+    
+    SDL_Event event;
 
     Uint32 frameStart;
+    Uint32 lastCursorToggle = SDL_GetTicks();
     int running = 1;
     int ctrl_pressed = 0;
-    SDL_Event event;
+    int cursor_visible = 1;
 
     while (running) {
         frameStart = SDL_GetTicks();
+
+        if (SDL_GetTicks() - lastCursorToggle >= 500) {
+            cursor_visible = !cursor_visible;
+            lastCursorToggle = SDL_GetTicks();
+        }
 
         while (SDL_PollEvent(&event)) {
             switch (event.type) {
@@ -151,9 +196,7 @@ void handle(SDL_Window *window, SDL_Renderer *renderer, TTF_Font *font, char *bu
                                 SDL_SetWindowTitle(window, title);
 
                                 line = malloc(1024 * sizeof(char));
-
-                                free(buffer);
-                                buffer = malloc(1 * sizeof(char));
+                                
                                 buffer[0] = '\0';
 
                                 while(fgets(line, 1024, file)) {
@@ -161,7 +204,7 @@ void handle(SDL_Window *window, SDL_Renderer *renderer, TTF_Font *font, char *bu
                                     int len = strlen(buffer);
 
                                     newBuffer = realloc(buffer, len + strlen(line) + 1);
-                                    
+
                                     if (newBuffer) {
                                         buffer = newBuffer;
                                         memcpy(&buffer[len], line, strlen(line));
@@ -192,9 +235,9 @@ void handle(SDL_Window *window, SDL_Renderer *renderer, TTF_Font *font, char *bu
         SDL_RenderClear(renderer);
 
         if (buffer[0] != '\0') {
-            codeText(renderer, font, WhiteColor, buffer);
+            codeText(renderer, font, WhiteColor, buffer, cursor_visible);
         } else {
-            codeText(renderer, font, GrayColor, start);
+            codeText(renderer, font, GrayColor, start, 0);
         }
 
         SDL_RenderPresent(renderer);
