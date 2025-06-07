@@ -138,15 +138,20 @@ void handle(SDL_Window *window, SDL_Renderer *renderer, TTF_Font *font, char *bu
                             FILE *file = fopen(path, "r");
                             if (file) {
                                 char title[256];
+                                char *line = NULL;
                                 const char *filename = strrchr(path, '/');
-                                if (filename)
+
+                                if (filename){
                                     filename++;
-                                else
+                                } else {
                                     filename = path;
+                                }
+                                
                                 snprintf(title, sizeof(title), "Slash Editor - %s", filename);
                                 SDL_SetWindowTitle(window, title);
-                                char *line = NULL;
+
                                 line = malloc(1024 * sizeof(char));
+
                                 free(buffer);
                                 buffer = malloc(1 * sizeof(char));
                                 buffer[0] = '\0';
@@ -154,7 +159,9 @@ void handle(SDL_Window *window, SDL_Renderer *renderer, TTF_Font *font, char *bu
                                 while(fgets(line, 1024, file)) {
                                     char *newBuffer = NULL;
                                     int len = strlen(buffer);
+
                                     newBuffer = realloc(buffer, len + strlen(line) + 1);
+                                    
                                     if (newBuffer) {
                                         buffer = newBuffer;
                                         memcpy(&buffer[len], line, strlen(line));
