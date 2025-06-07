@@ -1,6 +1,7 @@
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_ttf.h>
 #include "window.h"
+#include "tinyfiledialogs.h"
 
 #define FPS 30
 
@@ -108,6 +109,56 @@ void handle(SDL_Window *window, SDL_Renderer *renderer, TTF_Font *font, char *bu
 
                     if (ctrl_pressed && event.key.keysym.sym == SDLK_q) {
                         running = 0;
+                    }else if( ctrl_pressed && event.key.keysym.sym == SDLK_s) {
+                        // Save functionality can be implemented here
+                    } else if (ctrl_pressed && event.key.keysym.sym == SDLK_c) {
+                        // Copy functionality can be implemented here
+                    } else if (ctrl_pressed && event.key.keysym.sym == SDLK_v) {
+                        // Paste functionality can be implemented here
+                    }
+                    else if (ctrl_pressed && event.key.keysym.sym == SDLK_x) {
+                        // Cut functionality can be implemented here
+                    }
+                    else if (ctrl_pressed && event.key.keysym.sym == SDLK_a) {
+                        // Select all functionality can be implemented here
+                    }
+                    else if (ctrl_pressed && event.key.keysym.sym == SDLK_z) {
+                        // Undo functionality can be implemented here
+                    }
+                    else if (ctrl_pressed && event.key.keysym.sym == SDLK_o) {
+                        const char *path = tinyfd_openFileDialog(
+                            "Open File",   // title
+                            "",            // default directory
+                            0, NULL,       // allowed extensions (0 = all)
+                            NULL,          // extension description
+                            0              // do not allow multiple selection
+                        );
+
+                        if (path) {
+                            FILE *file = fopen(path, "r");
+                            if (file) {
+                                char *line = NULL;
+                                line = malloc(1024 * sizeof(char));
+                                free(buffer);
+                                buffer = malloc(1 * sizeof(char));
+                                buffer[0] = '\0';
+
+                                while(fgets(line, 1024, file)) {
+                                    char *newBuffer = NULL;
+                                    int len = strlen(buffer);
+                                    newBuffer = realloc(buffer, len + strlen(line) + 1);
+                                    if (newBuffer) {
+                                        buffer = newBuffer;
+                                        memcpy(&buffer[len], line, strlen(line));
+                                        buffer[len + strlen(line)] = '\0';
+                                    }   
+                                }
+
+                                fclose(file);
+                            } else {
+                                perror("Error opening file");
+                            }
+                        }
                     }
                     break;
 
