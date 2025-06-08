@@ -5,6 +5,58 @@
 
 #define FPS 24
 
+// Structure pour stocker les textures en cache
+typedef struct {
+    SDL_Texture *texture;
+    int width;
+    int height;
+    char *text;
+} CachedTexture;
+
+#define MAX_CACHE_SIZE 1000
+static CachedTexture textureCache[MAX_CACHE_SIZE];
+static int cacheSize = 0;
+
+void clearTextureCache() {
+    for (int i = 0; i < cacheSize; i++) {
+        if (textureCache[i].texture) {
+            SDL_DestroyTexture(textureCache[i].texture);
+            free(textureCache[i].text);
+        }
+    }
+    cacheSize = 0;
+}
+
+SDL_Texture* getOrCreateTexture(SDL_Renderer *renderer, TTF_Font *font, const char *text, SDL_Color color, int *w, int *h) {
+    // Recherche dans le cache
+    for (int i = 0; i < cacheSize; i++) {
+        if (strcmp(textureCache[i].text, text) == 0) {
+            *w = textureCache[i].width;
+            *h = textureCache[i].height;
+            return textureCache[i].texture;
+        }
+    }
+
+    // Création d'une nouvelle texture si non trouvée
+    SDL_Surface *surface = TTF_RenderText_Blended(font, text, color);
+    if (!surface) return NULL;
+
+    SDL_Texture *texture = SDL_CreateTextureFromSurface(renderer, surface);
+    *w = surface->w;
+    *h = surface->h;
+    SDL_FreeSurface(surface);
+
+    if (cacheSize < MAX_CACHE_SIZE) {
+        textureCache[cacheSize].texture = texture;
+        textureCache[cacheSize].width = *w;
+        textureCache[cacheSize].height = *h;
+        textureCache[cacheSize].text = strdup(text);
+        cacheSize++;
+    }
+
+    return texture;
+}
+
 void codeText(SDL_Renderer *renderer, TTF_Font *font, SDL_Color textColor, const char *text, int showCursor) {
     const char *lineStart = text;
     const char *ptr = text;
@@ -22,15 +74,13 @@ void codeText(SDL_Renderer *renderer, TTF_Font *font, SDL_Color textColor, const
             memcpy(lineBuffer, lineStart, len);
             lineBuffer[len] = '\0';
 
-            SDL_Surface *textSurface = TTF_RenderText_Blended(font, lineBuffer, textColor);
-            if (textSurface) {
-                SDL_Texture *textTexture = SDL_CreateTextureFromSurface(renderer, textSurface);
-                SDL_Rect textRect = {10, line_y, textSurface->w, textSurface->h};
-                SDL_RenderCopy(renderer, textTexture, NULL, &textRect);
-                SDL_DestroyTexture(textTexture);
+            int w, h;
+            SDL_Texture *texture = getOrCreateTexture(renderer, font, lineBuffer, textColor, &w, &h);
+            if (texture) {
+                SDL_Rect textRect = {10, line_y, w, h};
+                SDL_RenderCopy(renderer, texture, NULL, &textRect);
                 last_line_w = 0;
-                last_line_h = textSurface->h;
-                SDL_FreeSurface(textSurface);
+                last_line_h = h;
             }
 
             line_y += last_line_h;
@@ -45,15 +95,13 @@ void codeText(SDL_Renderer *renderer, TTF_Font *font, SDL_Color textColor, const
         memcpy(lineBuffer, lineStart, len);
         lineBuffer[len] = '\0';
 
-        SDL_Surface *textSurface = TTF_RenderText_Blended(font, lineBuffer, textColor);
-        if (textSurface) {
-            SDL_Texture *textTexture = SDL_CreateTextureFromSurface(renderer, textSurface);
-            SDL_Rect textRect = {10, line_y, textSurface->w, textSurface->h};
-            SDL_RenderCopy(renderer, textTexture, NULL, &textRect);
-            last_line_w = textSurface->w;
-            last_line_h = textSurface->h;
-            SDL_DestroyTexture(textTexture);
-            SDL_FreeSurface(textSurface);
+        int w, h;
+        SDL_Texture *texture = getOrCreateTexture(renderer, font, lineBuffer, textColor, &w, &h);
+        if (texture) {
+            SDL_Rect textRect = {10, line_y, w, h};
+            SDL_RenderCopy(renderer, texture, NULL, &textRect);
+            last_line_w = w;
+            last_line_h = h;
         }
     }
 
@@ -289,4 +337,5 @@ void handle(SDL_Window *window, SDL_Renderer *renderer, TTF_Font *font, char *bu
     }
 
     SDL_StopTextInput();
+    clearTextureCache();
 }
