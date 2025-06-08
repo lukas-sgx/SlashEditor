@@ -130,7 +130,7 @@ void handle(SDL_Window *window, SDL_Renderer *renderer, TTF_Font *font, char *bu
                                     len--;
                                     buffer[len] = '\0'; 
                                     if (len == 0) {
-                                        newBuffer = realloc(buffer, sizeof(buffer)-1);
+                                        newBuffer = realloc(buffer, 1);
                                         buffer = newBuffer;
                                         buffer[0] = '\0';
                                     } else {
@@ -143,7 +143,7 @@ void handle(SDL_Window *window, SDL_Renderer *renderer, TTF_Font *font, char *bu
                                 break;
 
                             case SDLK_RETURN:
-                                int len = strlen(buffer);
+                                len = strlen(buffer);
                                 char *newBuffer = realloc(buffer, len + 2); // \n + \0
                                 if (newBuffer) {
                                     buffer = newBuffer;
@@ -252,12 +252,11 @@ void handle(SDL_Window *window, SDL_Renderer *renderer, TTF_Font *font, char *bu
                                     int len = strlen(buffer);
 
                                     newBuffer = realloc(buffer, len + strlen(line) + 1);
-
                                     if (newBuffer) {
                                         buffer = newBuffer;
-                                        memcpy(&buffer[len], line, strlen(line));
-                                        buffer[len + strlen(line)] = '\0';
-                                    }   
+                                        strcat(buffer, line);
+                                    }
+
                                 }
                                 
                                 nSave = 1;
