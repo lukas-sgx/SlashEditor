@@ -132,7 +132,7 @@ void handle(SDL_Window *window, SDL_Renderer *renderer, TTF_Font *font, char *bu
     while (running) {
         frameStart = SDL_GetTicks();
 
-        if (SDL_GetTicks() - lastCursorToggle >= 500) {
+        if (SDL_GetTicks() - lastCursorToggle >= 600) {
             cursor_visible = !cursor_visible;
             lastCursorToggle = SDL_GetTicks();
         }
