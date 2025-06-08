@@ -33,6 +33,10 @@ void codeText(SDL_Renderer *renderer, TTF_Font *font, SDL_Color textColor, const
 
             line_y += last_line_h;
             lineStart = ptr + 1;
+
+            if(line){
+                free(line);
+            }
         }
 
         ptr++;
