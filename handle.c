@@ -31,7 +31,6 @@ void codeText(SDL_Renderer *renderer, TTF_Font *font, SDL_Color textColor, const
                 SDL_FreeSurface(textSurface);
             }
 
-            free(line);
             line_y += last_line_h;
             lineStart = ptr + 1;
         }
@@ -55,8 +54,6 @@ void codeText(SDL_Renderer *renderer, TTF_Font *font, SDL_Color textColor, const
             SDL_DestroyTexture(textTexture);
             SDL_FreeSurface(textSurface);
         }
-
-        free(line);
     }
 
     if (showCursor) {
@@ -82,6 +79,7 @@ void handle(SDL_Window *window, SDL_Renderer *renderer, TTF_Font *font, char *bu
     int running = 1;
     int ctrl_pressed = 0;
     int cursor_visible = 1;
+    int nSave = 0;
 
     SDL_StartTextInput();
 
@@ -132,8 +130,8 @@ void handle(SDL_Window *window, SDL_Renderer *renderer, TTF_Font *font, char *bu
                                     len--;
                                     buffer[len] = '\0'; 
                                     if (len == 0) {
-                                        free(buffer);
-                                        buffer = malloc(1 * sizeof(char));
+                                        newBuffer = realloc(buffer, sizeof(buffer)-1);
+                                        buffer = newBuffer;
                                         buffer[0] = '\0';
                                     } else {
                                         newBuffer = realloc(buffer, len + 1);
@@ -162,16 +160,48 @@ void handle(SDL_Window *window, SDL_Renderer *renderer, TTF_Font *font, char *bu
                     if (ctrl_pressed && event.key.keysym.sym == SDLK_q) {
                         running = 0;
                     }else if( ctrl_pressed && event.key.keysym.sym == SDLK_s) {
-                        printf(filename);
-                        if (filename == "Untilted"){       
-                            const char *path = tinyfd_openFileDialog(
-                                "Save File",   // title
-                                "",            // default directory
-                                0, NULL,       // allowed extensions (0 = all)
-                                NULL,          // extension description
-                                0              // do not allow multiple selection
+                        if (nSave == 0){       
+                            char *path = tinyfd_saveFileDialog(
+                                "Save File",
+                                "",           
+                                0,
+                                NULL,
+                                NULL
                             );
-                    }
+
+                            if (path){
+                                FILE *file = fopen(path, "w");
+
+                                if(file){
+                                    fputs(buffer, file);
+                                    fclose(file);
+
+                                    char title[256];
+                                    char *filenameAff = strrchr(path, '/');
+                                    
+                                    filename = path;
+
+                                    if (filenameAff){
+                                        filenameAff++;
+                                    } else {
+                                        filenameAff = path;
+                                    }
+                                    
+                                    snprintf(title, sizeof(title), "Slash Editor - %s", filenameAff);
+                                    SDL_SetWindowTitle(window, title);
+
+                                    nSave = 1;
+                                }
+                            }
+                        }else{
+                            FILE *file = fopen(filename, "w");
+
+                            if(file){
+                                fputs(buffer, file);
+
+                                fclose(file);
+                            }
+                        }
                     } else if (ctrl_pressed && event.key.keysym.sym == SDLK_c) {
                         // Copy functionality can be implemented here
                     } else if (ctrl_pressed && event.key.keysym.sym == SDLK_v) {
@@ -200,15 +230,17 @@ void handle(SDL_Window *window, SDL_Renderer *renderer, TTF_Font *font, char *bu
                             if (file) {
                                 char title[256];
                                 char *line = NULL;
-                                filename = strrchr(path, '/');
+                                char *filenameAff = strrchr(path, '/');
+                                
+                                filename = path;
 
-                                if (filename){
-                                    filename++;
+                                if (filenameAff){
+                                    filenameAff++;
                                 } else {
-                                    filename = path;
+                                    filenameAff = path;
                                 }
                                 
-                                snprintf(title, sizeof(title), "Slash Editor - %s", filename);
+                                snprintf(title, sizeof(title), "Slash Editor - %s", filenameAff);
                                 SDL_SetWindowTitle(window, title);
 
                                 line = malloc(1024 * sizeof(char));
@@ -227,7 +259,8 @@ void handle(SDL_Window *window, SDL_Renderer *renderer, TTF_Font *font, char *bu
                                         buffer[len + strlen(line)] = '\0';
                                     }   
                                 }
-
+                                
+                                nSave = 1;
                                 fclose(file);
                             } else {
                                 perror("Error opening file");
@@ -259,4 +292,6 @@ void handle(SDL_Window *window, SDL_Renderer *renderer, TTF_Font *font, char *bu
         SDL_RenderPresent(renderer);
         frameDelay(FPS, frameStart);
     }
+
+    SDL_StopTextInput();
 }
