@@ -13,14 +13,16 @@ void codeText(SDL_Renderer *renderer, TTF_Font *font, SDL_Color textColor, const
     int last_line_w = 0;
     int last_line_h = TTF_FontHeight(font);
 
+    char lineBuffer[2048];
+
     while (*ptr) {
         if (*ptr == '\n') {
             int len = ptr - lineStart;
-            char *line = malloc(len + 1);
-            strncpy(line, lineStart, len);
-            line[len] = '\0';
+            if (len >= sizeof(lineBuffer)) len = sizeof(lineBuffer) - 1;
+            memcpy(lineBuffer, lineStart, len);
+            lineBuffer[len] = '\0';
 
-            SDL_Surface *textSurface = TTF_RenderText_Blended(font, line, textColor);
+            SDL_Surface *textSurface = TTF_RenderText_Blended(font, lineBuffer, textColor);
             if (textSurface) {
                 SDL_Texture *textTexture = SDL_CreateTextureFromSurface(renderer, textSurface);
                 SDL_Rect textRect = {10, line_y, textSurface->w, textSurface->h};
@@ -33,22 +35,17 @@ void codeText(SDL_Renderer *renderer, TTF_Font *font, SDL_Color textColor, const
 
             line_y += last_line_h;
             lineStart = ptr + 1;
-
-            if(line){
-                free(line);
-            }
         }
-
         ptr++;
     }
 
-    if (lineStart <= ptr) {
+    if (lineStart < ptr) {
         int len = ptr - lineStart;
-        char *line = malloc(len + 1);
-        strncpy(line, lineStart, len);
-        line[len] = '\0';
+        if (len >= sizeof(lineBuffer)) len = sizeof(lineBuffer) - 1;
+        memcpy(lineBuffer, lineStart, len);
+        lineBuffer[len] = '\0';
 
-        SDL_Surface *textSurface = TTF_RenderText_Blended(font, line, textColor);
+        SDL_Surface *textSurface = TTF_RenderText_Blended(font, lineBuffer, textColor);
         if (textSurface) {
             SDL_Texture *textTexture = SDL_CreateTextureFromSurface(renderer, textSurface);
             SDL_Rect textRect = {10, line_y, textSurface->w, textSurface->h};
@@ -232,8 +229,20 @@ void handle(SDL_Window *window, SDL_Renderer *renderer, TTF_Font *font, char *bu
                         if (path) {
                             FILE *file = fopen(path, "r");
                             if (file) {
+                                fseek(file, 0, SEEK_END);
+                                long fsize = ftell(file);
+                                rewind(file);
+
+                                char *newBuffer = malloc(fsize + 1);
+
+                                size_t read = fread(newBuffer, 1, fsize, file);
+                                newBuffer[read] = '\0';
+
+                                buffer = newBuffer;
+
+                                fclose(file);
+
                                 char title[256];
-                                char *line = NULL;
                                 char *filenameAff = strrchr(path, '/');
                                 
                                 filename = path;
@@ -246,25 +255,8 @@ void handle(SDL_Window *window, SDL_Renderer *renderer, TTF_Font *font, char *bu
                                 
                                 snprintf(title, sizeof(title), "Slash Editor - %s", filenameAff);
                                 SDL_SetWindowTitle(window, title);
-
-                                line = malloc(1024 * sizeof(char));
-                                
-                                buffer[0] = '\0';
-
-                                while(fgets(line, 1024, file)) {
-                                    char *newBuffer = NULL;
-                                    int len = strlen(buffer);
-
-                                    newBuffer = realloc(buffer, len + strlen(line) + 1);
-                                    if (newBuffer) {
-                                        buffer = newBuffer;
-                                        strcat(buffer, line);
-                                    }
-
-                                }
                                 
                                 nSave = 1;
-                                fclose(file);
                             } else {
                                 perror("Error opening file");
                             }
