@@ -5,7 +5,6 @@
 
 #define FPS 24
 
-// Structure pour stocker les textures en cache
 typedef struct {
     SDL_Texture *texture;
     int width;
@@ -28,7 +27,6 @@ void clearTextureCache() {
 }
 
 SDL_Texture* getOrCreateTexture(SDL_Renderer *renderer, TTF_Font *font, const char *text, SDL_Color color, int *w, int *h) {
-    // Recherche dans le cache
     for (int i = 0; i < cacheSize; i++) {
         if (strcmp(textureCache[i].text, text) == 0) {
             *w = textureCache[i].width;
@@ -37,7 +35,6 @@ SDL_Texture* getOrCreateTexture(SDL_Renderer *renderer, TTF_Font *font, const ch
         }
     }
 
-    // Création d'une nouvelle texture si non trouvée
     SDL_Surface *surface = TTF_RenderText_Blended(font, text, color);
     if (!surface) return NULL;
 
