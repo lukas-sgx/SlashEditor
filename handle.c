@@ -71,7 +71,7 @@ void codeText(SDL_Renderer *renderer, TTF_Font *font, SDL_Color textColor, const
     }
 }
 
-void handle(SDL_Window *window, SDL_Renderer *renderer, TTF_Font *font, char *buffer, const char *start) {
+void handle(SDL_Window *window, SDL_Renderer *renderer, TTF_Font *font, char *buffer, const char *start, char *filename) {
     SDL_Color GrayColor = {112, 112, 112, 230};
     SDL_Color WhiteColor = {255, 255, 255, 230};
     
@@ -82,6 +82,8 @@ void handle(SDL_Window *window, SDL_Renderer *renderer, TTF_Font *font, char *bu
     int running = 1;
     int ctrl_pressed = 0;
     int cursor_visible = 1;
+
+    SDL_StartTextInput();
 
     while (running) {
         frameStart = SDL_GetTicks();
@@ -96,6 +98,19 @@ void handle(SDL_Window *window, SDL_Renderer *renderer, TTF_Font *font, char *bu
                 case SDL_QUIT:
                     running = 0;
                     break;
+
+                case SDL_TEXTINPUT: {
+                    int len = strlen(buffer);
+                    int textLen = strlen(event.text.text);
+
+                    char *newBuffer = realloc(buffer, len + textLen + 1);
+                    if (newBuffer) {
+                        buffer = newBuffer;
+                        memcpy(&buffer[len], event.text.text, textLen);
+                        buffer[len + textLen] = '\0';
+                    }
+                    break;
+                }
 
                 case SDL_KEYDOWN:
                     if ((event.key.keysym.sym == SDLK_LCTRL || event.key.keysym.sym == SDLK_RCTRL)) {
@@ -130,32 +145,33 @@ void handle(SDL_Window *window, SDL_Renderer *renderer, TTF_Font *font, char *bu
                                 break;
 
                             case SDLK_RETURN:
-                                key = "\n";
-                                lenKey = 1;
+                                int len = strlen(buffer);
+                                char *newBuffer = realloc(buffer, len + 2); // \n + \0
+                                if (newBuffer) {
+                                    buffer = newBuffer;
+                                    buffer[len] = '\n';
+                                    buffer[len + 1] = '\0';
+                                }
                                 break;
 
                             default:
-                                if (ctrl_pressed != 1 && event.key.keysym.sym < 128) {
-                                    key = SDL_GetKeyName(event.key.keysym.sym);
-                                    lenKey = strlen(key);
-                                }
                                 break;
-                        }
-
-                        if (key) {
-                            newBuffer = realloc(buffer, len + lenKey + 1);
-                            if (newBuffer) {
-                                buffer = newBuffer;
-                                memcpy(&buffer[len], key, lenKey);
-                                buffer[len + lenKey] = '\0';
-                            }
                         }
                     }
 
                     if (ctrl_pressed && event.key.keysym.sym == SDLK_q) {
                         running = 0;
                     }else if( ctrl_pressed && event.key.keysym.sym == SDLK_s) {
-                        // Save functionality can be implemented here
+                        printf(filename);
+                        if (filename == "Untilted"){       
+                            const char *path = tinyfd_openFileDialog(
+                                "Save File",   // title
+                                "",            // default directory
+                                0, NULL,       // allowed extensions (0 = all)
+                                NULL,          // extension description
+                                0              // do not allow multiple selection
+                            );
+                    }
                     } else if (ctrl_pressed && event.key.keysym.sym == SDLK_c) {
                         // Copy functionality can be implemented here
                     } else if (ctrl_pressed && event.key.keysym.sym == SDLK_v) {
@@ -171,7 +187,7 @@ void handle(SDL_Window *window, SDL_Renderer *renderer, TTF_Font *font, char *bu
                         // Undo functionality can be implemented here
                     }
                     else if (ctrl_pressed && event.key.keysym.sym == SDLK_o) {
-                        const char *path = tinyfd_openFileDialog(
+                        char *path = tinyfd_openFileDialog(
                             "Open File",   // title
                             "",            // default directory
                             0, NULL,       // allowed extensions (0 = all)
@@ -184,7 +200,7 @@ void handle(SDL_Window *window, SDL_Renderer *renderer, TTF_Font *font, char *bu
                             if (file) {
                                 char title[256];
                                 char *line = NULL;
-                                const char *filename = strrchr(path, '/');
+                                filename = strrchr(path, '/');
 
                                 if (filename){
                                     filename++;
@@ -237,7 +253,7 @@ void handle(SDL_Window *window, SDL_Renderer *renderer, TTF_Font *font, char *bu
         if (buffer[0] != '\0') {
             codeText(renderer, font, WhiteColor, buffer, cursor_visible);
         } else {
-            codeText(renderer, font, GrayColor, start, 0);
+            codeText(renderer, font, GrayColor, start, cursor_visible);
         }
 
         SDL_RenderPresent(renderer);

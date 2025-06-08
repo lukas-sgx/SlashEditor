@@ -18,14 +18,15 @@ int main(int argc, char const *argv[]){
     int size = INIT_SIZE;
     char *start = malloc(size * sizeof(char));
     char *buffer = malloc(size * sizeof(char));
+    char *filename = "Untitled";
 
     strcpy(start, "Start Typing...");
     buffer[0] = '\0';
 
-    initWindow(&window, &renderer, &font);
-    codeText(renderer, font, GrayColor, start,0);
+    initWindow(&window, &renderer, &font, filename);
+    codeText(renderer, font, GrayColor, start, 1);
 
-    handle(window, renderer, font, buffer, start);
+    handle(window, renderer, font, buffer, start, filename);
 
     free(start);
     if(buffer){

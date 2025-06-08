@@ -1,7 +1,7 @@
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_ttf.h>
 
-void initWindow(SDL_Window **window, SDL_Renderer **renderer, TTF_Font **font){
+void initWindow(SDL_Window **window, SDL_Renderer **renderer, TTF_Font **font, char *filename){
     if(SDL_Init(SDL_INIT_VIDEO) != 0){
         fprintf(stderr, "Erreur SDL_Init : %s\n", SDL_GetError());
         exit(EXIT_FAILURE);
@@ -13,7 +13,10 @@ void initWindow(SDL_Window **window, SDL_Renderer **renderer, TTF_Font **font){
         exit(EXIT_FAILURE);
     }
 
-    *window = SDL_CreateWindow("Slash Editor - Untitled", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 680, 480, SDL_WINDOW_RESIZABLE);
+    char title[256];
+    snprintf(title, sizeof(title), "Slash Editor - %s", filename);
+
+    *window = SDL_CreateWindow(title, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 680, 480, SDL_WINDOW_RESIZABLE);
     if (!*window) {
         fprintf(stderr, "Erreur SDL_CreateWindow : %s\n", SDL_GetError());
         SDL_Quit();
