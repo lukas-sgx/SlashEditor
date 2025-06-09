@@ -35,7 +35,7 @@ SDL_Texture* getOrCreateTexture(SDL_Renderer *renderer, TTF_Font *font, const ch
         }
     }
 
-    SDL_Surface *surface = TTF_RenderText_Blended(font, text, color);
+    SDL_Surface *surface = TTF_RenderUTF8_Blended(font, text, color);
     if (!surface) return NULL;
 
     SDL_Texture *texture = SDL_CreateTextureFromSurface(renderer, surface);
